@@ -8,23 +8,44 @@ function postData(event) {
     let city = document.getElementById("hu").value;
     api = base + city + "&units=metric&lang=fr&appid=1e810c29dc384ef9ab829462881a5fa7";
     fetch(api).then(function (response) {
+        $(city).val('');
         response.json().then(function (text) {
-            descript = text.name;
-            currenttemp = text.weather[0].description;
-            icon = text.weather[0].icon;
-            mintemp = text.main.temp_min;
-            maxtemp = text.main.temp_max;
+            let describe = text.name;
+            let currentTemp = text.weather[0].description;
+            let country = text.sys.country;
+            let icon = text.weather[0].icon;
+            let minTemp = text.main.temp_min;
+            let maxTemp = text.main.temp_max;
+            let lon = text.coord.lon;
+            let lat = text.coord.lat;
+
+            let macarte = null;
+
+            function initMap() {
+                // Reload map //
+                let container = L.DomUtil.get('map');
+                if (container != null) {
+                    container._leaflet_id = null;
+                }
+                macarte = L.map('map').setView([lat, lon], 11);
+                L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+                    minZoom: 1,
+                    maxZoom: 20
+                }).addTo(macarte);
+                let marker = L.marker([lat, lon]).addTo(macarte);
+            }
 
             sendHTML =
                 "<tr>" +
-                "<th>" + descript + "</th>" +
+                "<th>" + describe + " (" + country + ")</th>" +
                 "<td><img src='http://openweathermap.org/img/w/" + icon + ".png'></td>" +
-                "<td>" + currenttemp + "</td>"   +
-                "<td>" + mintemp + "&deg;C</td>" +
-                "<td>" + maxtemp + "&deg;C</td>" +
+                "<td>" + currentTemp + "</td>" +
+                "<td>" + minTemp + "&deg;C</td>" +
+                "<td>" + maxTemp + "&deg;C</td>" +
                 "</tr>";
 
             weather.insertAdjacentHTML('afterbegin', sendHTML);
+            map.insertBefore('afterbegin', initMap());
 
         });
     });
